@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Interaktif TKA SMP - Pola, Barisan & Deret</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8fafc;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .math-expr {
+      font-family: 'Times New Roman', Times, serif;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER NAVBAR -->
+  <header class="bg-indigo-700 text-white sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+          <i class="fa-solid me-1 fa-square-root-variable text-xl text-amber-300"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-base sm:text-lg leading-tight">Quiz TKA Matematika SMP</h1>
+          <p class="text-xs text-indigo-200">Materi: Pola, Barisan & Deret (30 Soal)</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        <!-- Persistent status badge -->
+        <span class="inline-flex items-center gap-1 text-xs bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 px-2.5 py-1 rounded-full">
+          <i class="fa-solid fa-cloud-arrow-up text-[10px]"></i> Tersimpan Otomatis
+        </span>
+        <button id="btn-grid-modal" onclick="toggleGridModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-sm font-semibold flex items-center space-x-1.5 transition">
+          <i class="fa-solid fa-table-cells"></i>
+          <span class="hidden sm:inline">Navigasi Soal</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- LEFT SIDEBAR: SUMMARY & QUICK NAV (LG SCREENS) -->
+    <aside class="hidden lg:block lg:col-span-4 space-y-6">
+      <!-- STATS CARD -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+        <h2 class="font-bold text-slate-700 text-base flex items-center justify-between">
+          <span>Progres Latihan</span>
+          <span id="progress-percent" class="text-indigo-600 font-extrabold text-lg">0%</span>
+        </h2>
+        
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+          <div id="progress-bar-fill" class="bg-indigo-600 h-full w-0 transition-all duration-300"></div>
+        </div>
+
+        <!-- Score Breakdown Grid -->
+        <div class="grid grid-cols-3 gap-2 pt-2 text-center">
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+            <span class="block text-xs text-slate-500 font-medium">Dijawab</span>
+            <span id="stat-answered" class="text-base font-bold text-slate-700">0/30</span>
+          </div>
+          <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-100">
+            <span class="block text-xs text-emerald-600 font-medium">Benar</span>
+            <span id="stat-correct" class="text-base font-bold text-emerald-600">0</span>
+          </div>
+          <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-100">
+            <span class="block text-xs text-rose-600 font-medium">Salah</span>
+            <span id="stat-incorrect" class="text-base font-bold text-rose-600">0</span>
+          </div>
+        </div>
+
+        <button onclick="confirmReset()" class="w-full mt-2 py-2 px-3 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-xl transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-rotate-left"></i> Reset Semua Jawaban
+        </button>
+      </div>
+
+      <!-- QUESTION MATRIX GRID -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+        <h3 class="font-bold text-slate-700 text-sm">Peta Nomor Soal</h3>
+        <div id="sidebar-grid" class="grid grid-cols-5 gap-2 max-h-[380px] overflow-y-auto custom-scrollbar p-1">
+          <!-- Populated dynamically -->
+        </div>
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Benar</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Salah</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-slate-200 inline-block"></span> Belum</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT MAIN AREA: QUESTION CARD -->
+    <section class="lg:col-span-8 flex flex-col space-y-4">
+
+      <!-- MOBILE PROGRESS BAR -->
+      <div class="lg:hidden bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <span class="text-xs text-slate-500 font-semibold block">Progres Pengerjaan</span>
+          <span id="mobile-progress-text" class="text-sm font-bold text-indigo-600">0 dari 30 Selesai</span>
+        </div>
+        <div class="flex items-center space-x-2 text-xs font-bold">
+          <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg" id="mobile-stat-correct">0 <i class="fa-solid fa-check"></i></span>
+          <span class="px-2 py-1 bg-rose-100 text-rose-700 rounded-lg" id="mobile-stat-incorrect">0 <i class="fa-solid fa-xmark"></i></span>
+        </div>
+      </div>
+
+      <!-- CARD SOAL -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 flex-grow flex flex-col justify-between">
+        <div>
+          <!-- Question Header & Tag -->
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+            <span id="q-number-badge" class="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-full text-xs sm:text-sm">
+              Soal 1 dari 30
+            </span>
+            <span id="q-category-tag" class="text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">
+              Pola Bilangan
+            </span>
+          </div>
+
+          <!-- Question Text -->
+          <div id="q-text" class="text-slate-800 font-semibold text-base sm:text-lg leading-relaxed mb-4">
+            <!-- Dynamic Question Text -->
+          </div>
+
+          <!-- SVG Visual Container (If any) -->
+          <div id="q-svg-container" class="mb-5 flex justify-center bg-slate-50 p-4 rounded-xl border border-slate-100 hidden">
+            <!-- SVG content inserted here -->
+          </div>
+
+          <!-- Options Grid -->
+          <div id="q-options" class="space-y-3 mb-6">
+            <!-- Dynamic Options -->
+          </div>
+
+          <!-- Real-Time Feedback & Pembahasan Box -->
+          <div id="q-explanation" class="hidden rounded-xl p-4 sm:p-5 border transition-all">
+            <div class="flex items-center gap-2 mb-2">
+              <span id="exp-icon-badge" class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"></span>
+              <h4 id="exp-title" class="font-bold text-sm sm:text-base"></h4>
+            </div>
+            <p id="exp-text" class="text-slate-700 text-xs sm:text-sm leading-relaxed"></p>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between">
+          <button id="btn-prev" onclick="navPrev()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-arrow-left"></i> Sebelumnya
+          </button>
+
+          <span class="text-xs text-slate-400 hidden sm:inline" id="nav-indicator-text">Tekan panah untuk berpindah</span>
+
+          <button id="btn-next" onclick="navNext()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition shadow-sm">
+            Berikutnya <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL NAVIGATION GRID (FOR MOBILE & QUICK JUMP) -->
+  <div id="modal-grid" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100 space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+          <i class="fa-solid fa-compass text-indigo-600"></i> Navigasi Soal (1 - 30)
+        </h3>
+        <button onclick="toggleGridModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      
+      <div id="modal-grid-items" class="grid grid-cols-5 sm:grid-cols-6 gap-2.5 max-h-[60vh] overflow-y-auto custom-scrollbar p-1">
+        <!-- Dynamic Modal Grid -->
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-end">
+        <button onclick="toggleGridModal()" class="px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-lg">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT QUIZ LOGIC & QUESTIONS DATA -->
+  <script>
+    // DATA 30 SOAL POLA, BARISAN DAN DERET TKA SMP DENGAN KUNCI JAWABAN TERACAK KETAT
+    const questionsData = [
+      {
+        id: 1,
+        category: "Pola Gambar / Config",
+        question: "Perhatikan pola pembentukan segitiga dari korek api berikut. Banyaknya batang korek api yang dibutuhkan untuk membuat <b>pola ke-25</b> adalah...",
+        svg: `<svg width="280" height="70" viewBox="0 0 280 70" class="mx-auto">
+          <!-- Pola 1: 1 Segitiga (3 korek) -->
+          <g transform="translate(10, 10)">
+            <line x1="0" y1="50" x2="40" y2="50" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <line x1="0" y1="50" x2="20" y2="10" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <line x1="20" y1="10" x2="40" y2="50" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <text x="20" y="65" font-size="10" text-anchor="middle" fill="#64748b">Pola 1 (3)</text>
+          </g>
+          <!-- Pola 2: 2 Segitiga (5 korek) -->
+          <g transform="translate(80, 10)">
+            <line x1="0" y1="50" x2="40" y2="50" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <line x1="40" y1="50" x2="80" y2="50" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <line x1="0" y1="50" x2="20" y2="10" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <line x1="20" y1="10" x2="40" y2="50" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <line x1="40" y1="50" x2="60" y2="10" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <line x1="60" y1="10" x2="80" y2="50" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <text x="40" y="65" font-size="10" text-anchor="middle" fill="#64748b">Pola 2 (5)</text>
+          </g>
+          <!-- Pola 3: 3 Segitiga (7 korek) -->
+          <g transform="translate(180, 10)">
+            <line x1="0" y1="50" x2="60" y2="50" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <line x1="0" y1="50" x2="15" y2="10" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <line x1="15" y1="10" x2="30" y2="50" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <line x1="30" y1="50" x2="45" y2="10" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <line x1="45" y1="10" x2="60" y2="50" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+            <text x="30" y="65" font-size="10" text-anchor="middle" fill="#64748b">Pola 3 (7)</text>
+          </g>
+        </svg>`,
+        options: ["51", "49", "53", "55"],
+        correct: 0, // A
+        explanation: "Pola batang korek api membentuk barisan aritmatika: 3, 5, 7, ... dengan suku pertama <i>a</i> = 3 dan beda <i>b</i> = 2.<br>Rumus suku ke-n: U<sub>n</sub> = 2n + 1.<br>Untuk n = 25: U<sub>25</sub> = 2(25) + 1 = <b>51</b>."
+      },
+      {
+        id: 2,
+        category: "Pola Bilangan Segitiga",
+        question: "Perhatikan pola titik-titik di bawah ini. Banyaknya titik pada <b>pola ke-12</b> adalah...",
+        svg: `<svg width="260" height="70" viewBox="0 0 260 70" class="mx-auto">
+          <!-- Pola 1 -->
+          <circle cx="20" cy="45" r="5" fill="#4f46e5"/>
+          <text x="20" y="65" font-size="10" text-anchor="middle" fill="#64748b">Pola 1 (1)</text>
+          <!-- Pola 2 -->
+          <circle cx="70" cy="45" r="5" fill="#4f46e5"/>
+          <circle cx="85" cy="45" r="5" fill="#4f46e5"/>
+          <circle cx="77.5" cy="30" r="5" fill="#4f46e5"/>
+          <text x="77.5" y="65" font-size="10" text-anchor="middle" fill="#64748b">Pola 2 (3)</text>
+          <!-- Pola 3 -->
+          <circle cx="140" cy="45" r="5" fill="#4f46e5"/>
+          <circle cx="155" cy="45" r="5" fill="#4f46e5"/>
+          <circle cx="170" cy="45" r="5" fill="#4f46e5"/>
+          <circle cx="147.5" cy="32" r="5" fill="#4f46e5"/>
+          <circle cx="162.5" cy="32" r="5" fill="#4f46e5"/>
+          <circle cx="155" cy="19" r="5" fill="#4f46e5"/>
+          <text x="155" y="65" font-size="10" text-anchor="middle" fill="#64748b">Pola 3 (6)</text>
+        </svg>`,
+        options: ["66", "78", "72", "84"],
+        correct: 1, // B
+        explanation: "Ini merupakan Pola Bilangan Segitiga: 1, 3, 6, 10, ...<br>Rumus suku ke-n: U<sub>n</sub> = ½ × n × (n + 1).<br>U<sub>12</sub> = ½ × 12 × (12 + 1) = 6 × 13 = <b>78</b>."
+      },
+      {
+        id: 3,
+        category: "Barisan Aritmatika",
+        question: "Diketahui barisan bilangan: 5, 9, 13, 17, 21, ... Suku ke-40 (U<sub>40</sub>) dari barisan tersebut adalah...",
+        options: ["157", "165", "161", "169"],
+        correct: 2, // C
+        explanation: "Suku pertama <i>a</i> = 5, beda <i>b</i> = 9 - 5 = 4.<br>U<sub>n</sub> = a + (n - 1)b<br>U<sub>40</sub> = 5 + (40 - 1) × 4 = 5 + 39 × 4 = 5 + 156 = <b>161</b>."
+      },
+      {
+        id: 4,
+        category: "Pola Ubin / Konfigurasi",
+        question: "Sebuah kolam persegi dikelilingi oleh ubin putih seperti gambar berikut. Jika terdapat <b>100 ubin putih</b>, maka ukuran kolam tersebut adalah...",
+        svg: `<svg width="140" height="90" viewBox="0 0 140 90" class="mx-auto">
+          <!-- Kolam 1x1 dikelilingi ubin -->
+          <rect x="20" y="10" width="20" height="20" fill="#cbd5e1" stroke="#94a3b8"/>
+          <rect x="40" y="10" width="20" height="20" fill="#cbd5e1" stroke="#94a3b8"/>
+          <rect x="60" y="10" width="20" height="20" fill="#cbd5e1" stroke="#94a3b8"/>
+          <rect x="20" y="30" width="20" height="20" fill="#cbd5e1" stroke="#94a3b8"/>
+          <rect x="40" y="30" width="20" height="20" fill="#0284c7" stroke="#0369a1"/>
+          <rect x="60" y="30" width="20" height="20" fill="#cbd5e1" stroke="#94a3b8"/>
+          <rect x="20" y="50" width="20" height="20" fill="#cbd5e1" stroke="#94a3b8"/>
+          <rect x="40" y="50" width="20" height="20" fill="#cbd5e1" stroke="#94a3b8"/>
+          <rect x="60" y="50" width="20" height="20" fill="#cbd5e1" stroke="#94a3b8"/>
+          <text x="50" y="82" font-size="10" text-anchor="middle" fill="#64748b">Pola n=1 (8 Ubin Putih)</text>
+        </svg>`,
+        options: ["22 × 22", "25 × 25", "26 × 26", "24 × 24"],
+        correct: 3, // D
+        explanation: "Rumus jumlah ubin putih untuk kolam n × n adalah U<sub>n</sub> = 4n + 4.<br>4n + 4 = 100 ➔ 4n = 96 ➔ n = 24.<br>Jadi, ukuran kolam tersebut adalah <b>24 × 24</b>."
+      },
+      {
+        id: 5,
+        category: "Barisan Aritmatika",
+        question: "Rumus suku ke-n dari barisan bilangan 95, 90, 85, 80, ... adalah...",
+        options: ["U<sub>n</sub> = 100 - 5n", "U<sub>n</sub> = 95 - 5n", "U<sub>n</sub> = 105 - 5n", "U<sub>n</sub> = 90 + 5n"],
+        correct: 0, // A
+        explanation: "Suku pertama <i>a</i> = 95, beda <i>b</i> = -5.<br>U<sub>n</sub> = a + (n - 1)b = 95 + (n - 1)(-5) = 95 - 5n + 5 = <b>100 - 5n</b>."
+      },
+      {
+        id: 6,
+        category: "Barisan Aritmatika",
+        question: "Suatu barisan aritmatika memiliki suku ke-3 sama dengan 14 dan suku ke-7 sama dengan 26. Suku ke-15 barisan tersebut adalah...",
+        options: ["48", "52", "50", "54"],
+        correct: 2, // C
+        explanation: "U<sub>7</sub> - U<sub>3</sub> = 4b ➔ 26 - 14 = 12 ➔ 4b = 12 ➔ <i>b</i> = 3.<br>U<sub>3</sub> = a + 2b ➔ 14 = a + 2(3) ➔ <i>a</i> = 8.<br>U<sub>15</sub> = a + 14b = 8 + 14(3) = 8 + 42 = <b>50</b>."
+      },
+      {
+        id: 7,
+        category: "Aplikasi Deret Aritmatika",
+        question: "Tumpukan bata paling bawah terdiri dari 30 buah, di atasnya 28 buah, di atasnya lagi 26 buah, dan seterusnya selalu berkurang 2 buah. Jika terdapat 12 tingkat tumpukan, jumlah seluruh bata adalah...",
+        svg: `<svg width="200" height="60" viewBox="0 0 200 60" class="mx-auto">
+          <rect x="40" y="40" width="120" height="12" fill="#ea580c" rx="2"/>
+          <rect x="50" y="26" width="100" height="12" fill="#ea580c" rx="2"/>
+          <rect x="60" y="12" width="80" height="12" fill="#ea580c" rx="2"/>
+          <text x="100" y="58" font-size="8" text-anchor="middle" fill="#fff">Baris 1 (30)</text>
+        </svg>`,
+        options: ["216 buah", "240 buah", "252 buah", "228 buah"],
+        correct: 3, // D
+        explanation: "<i>a</i> = 30, <i>b</i> = -2, <i>n</i> = 12.<br>S<sub>n</sub> = ½ × n × [2a + (n - 1)b]<br>S<sub>12</sub> = 6 × [2(30) + 11(-2)] = 6 × [60 - 22] = 6 × 38 = <b>228 buah</b>."
+      },
+      {
+        id: 8,
+        category: "Deret Aritmatika",
+        question: "Rumus jumlah n suku pertama suatu deret aritmatika adalah S<sub>n</sub> = 2n<sup>2</sup> + 3n. Nilai suku ke-8 (U<sub>8</sub>) deret tersebut adalah...",
+        options: ["33", "31", "35", "37"],
+        correct: 0, // A
+        explanation: "U<sub>8</sub> = S<sub>8</sub> - S<sub>7</sub>.<br>S<sub>8</sub> = 2(8)<sup>2</sup> + 3(8) = 2(64) + 24 = 128 + 24 = 152.<br>S<sub>7</sub> = 2(7)<sup>2</sup> + 3(7) = 2(49) + 21 = 98 + 21 = 119.<br>U<sub>8</sub> = 152 - 119 = <b>33</b>."
+      },
+      {
+        id: 9,
+        category: "Barisan Geometri",
+        question: "Suku ke-8 dari barisan geometri 3, 6, 12, 24, 48, ... adalah...",
+        options: ["192", "768", "384", "1536"],
+        correct: 2, // C
+        explanation: "Suku pertama <i>a</i> = 3, rasio <i>r</i> = 6/3 = 2.<br>Rumus: U<sub>n</sub> = a × r<sup>n-1</sup><br>U<sub>8</sub> = 3 × 2<sup>7</sup> = 3 × 128 = <b>384</b>."
+      },
+      {
+        id: 10,
+        category: "Barisan Geometri",
+        question: "Suku ke-7 dari barisan geometri 162, 54, 18, 6, ... adalah...",
+        options: ["2/3", "2/9", "2", "1/27"],
+        correct: 1, // B
+        explanation: "<i>a</i> = 162, rasio <i>r</i> = 54/162 = ⅓.<br>U<sub>7</sub> = 162 × (⅓)<sup>6</sup> = 162 × (1/729) = 162/729.<br>Jika disederhanakan (dibagi 81): <b>2/9</b>."
+      },
+      {
+        id: 11,
+        category: "Aplikasi Barisan Geometri",
+        question: "Setiap 20 menit, satu sel amoeba membelah diri menjadi 2. Jika awal terdapat 15 amoeba, berapa banyak amoeba setelah <b>2 jam</b>?",
+        options: ["480", "720", "1.920", "960"],
+        correct: 3, // D
+        explanation: "Waktu = 2 jam = 120 menit.<br>Banyaknya pembelahan (n) = 120 / 20 = 6 kali.<br>Jumlah akhir = Jumlah awal × 2<sup>n</sup> = 15 × 2<sup>6</sup> = 15 × 64 = <b>960 amoeba</b>."
+      },
+      {
+        id: 12,
+        category: "Aplikasi Deret Aritmatika",
+        question: "Gedung pertunjukan memiliki 15 baris kursi. Baris terdepan berisi 20 kursi, baris kedua 24 kursi, baris ketiga 28 kursi, dst. Kapasitas total gedung adalah...",
+        svg: `<svg width="220" height="60" viewBox="0 0 220 60" class="mx-auto">
+          <path d="M 20 50 L 200 50 L 180 10 L 40 10 Z" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+          <text x="110" y="35" font-size="10" text-anchor="middle" fill="#4338ca">Kapasitas Kursi Gedung</text>
+        </svg>`,
+        options: ["720 kursi", "680 kursi", "750 kursi", "800 kursi"],
+        correct: 0, // A
+        explanation: "<i>a</i> = 20, <i>b</i> = 4, <i>n</i> = 15.<br>S<sub>15</sub> = ½ × 15 × [2(20) + (15-1)4] = 7.5 × [40 + 56] = 7.5 × 96 = <b>720 kursi</b>."
+      },
+      {
+        id: 13,
+        category: "Pola Bilangan Bertingkat",
+        question: "Suku ke-15 dari barisan 2, 5, 10, 17, 26, 37, ... adalah...",
+        options: ["197", "226", "257", "225"],
+        correct: 1, // B
+        explanation: "Pola barisan: (1<sup>2</sup>+1), (2<sup>2</sup>+1), (3<sup>2</sup>+1), (4<sup>2</sup>+1), ...<br>Rumus: U<sub>n</sub> = n<sup>2</sup> + 1.<br>U<sub>15</sub> = 15<sup>2</sup> + 1 = 225 + 1 = <b>226</b>."
+      },
+      {
+        id: 14,
+        category: "Barisan Fibonacci",
+        question: "Diberikan barisan Fibonacci: 1, 2, 3, 5, 8, 13, 21, 34, <i>x</i>, <i>y</i>. Nilai dari <b><i>x</i> + <i>y</i></b> adalah...",
+        options: ["123", "138", "144", "154"],
+        correct: 2, // C
+        explanation: "Barisan Fibonacci menambah 2 suku sebelumnya:<br><i>x</i> = 21 + 34 = 55.<br><i>y</i> = 34 + 55 = 89.<br>Nilai <i>x</i> + <i>y</i> = 55 + 89 = <b>144</b>."
+      },
+      {
+        id: 15,
+        category: "Deret Geometri",
+        question: "Seutas tali dipotong menjadi 5 bagian membentuk barisan geometri. Jika tali terpendek 4 cm dan terpanjang 64 cm, panjang tali semula adalah...",
+        options: ["120 cm", "128 cm", "132 cm", "124 cm"],
+        correct: 3, // D
+        explanation: "<i>a</i> = 4, U<sub>5</sub> = 64 ➔ a × r<sup>4</sup> = 64 ➔ 4 × r<sup>4</sup> = 64 ➔ r<sup>4</sup> = 16 ➔ r = 2.<br>S<sub>5</sub> = a(r<sup>5</sup> - 1) / (r - 1) = 4(2<sup>5</sup> - 1) / (2 - 1) = 4(32 - 1) = 4 × 31 = <b>124 cm</b>."
+      },
+      {
+        id: 16,
+        category: "Pola Bilangan Persegi Panjang",
+        question: "Suku ke-10 dari barisan bilangan persegi panjang 2, 6, 12, 20, 30, ... adalah...",
+        options: ["110", "90", "100", "120"],
+        correct: 0, // A
+        explanation: "Rumus Pola Persegi Panjang: U<sub>n</sub> = n × (n + 1).<br>U<sub>10</sub> = 10 × (10 + 1) = 10 × 11 = <b>110</b>."
+      },
+      {
+        id: 17,
+        category: "Pola Bilangan Ganjil",
+        question: "Jumlah 30 bilangan ganjil pertama (1 + 3 + 5 + 7 + ... + 59) adalah...",
+        options: ["840", "900", "960", "1.000"],
+        correct: 1, // B
+        explanation: "Jumlah n bilangan ganjil pertama selalu sama dengan n<sup>2</sup>.<br>S<sub>30</sub> = 30<sup>2</sup> = <b>900</b>."
+      },
+      {
+        id: 18,
+        category: "Pola Hexagon / Gambar",
+        question: "Perhatikan pola segi enam (hexagon) bergandengan berikut. Banyaknya segmen garis pada <b>pola ke-15</b> adalah...",
+        svg: `<svg width="220" height="50" viewBox="0 0 220 50" class="mx-auto">
+          <!-- Hexagon 1 -->
+          <polygon points="20,25 30,10 50,10 60,25 50,40 30,40" fill="none" stroke="#059669" stroke-width="3"/>
+          <text x="40" y="48" font-size="9" text-anchor="middle" fill="#64748b">Pola 1 (6)</text>
+          <!-- Hexagon 2 bergandengan -->
+          <polygon points="110,25 120,10 140,10 150,25 140,40 120,40" fill="none" stroke="#059669" stroke-width="3"/>
+          <polygon points="150,25 160,10 180,10 190,25 180,40 160,40" fill="none" stroke="#059669" stroke-width="3"/>
+          <text x="150" y="48" font-size="9" text-anchor="middle" fill="#64748b">Pola 2 (11)</text>
+        </svg>`,
+        options: ["71", "81", "76", "86"],
+        correct: 2, // C
+        explanation: "Pola segmen garis: 6, 11, 16, ... (berkurang 1 garis yang saling menempel tiap bertambah hexagon).<br><i>a</i> = 6, <i>b</i> = 5.<br>U<sub>15</sub> = 6 + (15 - 1) × 5 = 6 + 14 × 5 = 6 + 70 = <b>76</b>."
+      },
+      {
+        id: 19,
+        category: "Banyak Suku Aritmatika",
+        question: "Banyaknya suku pada barisan aritmatika 7, 13, 19, 25, ..., 151 adalah...",
+        options: ["24", "26", "27", "25"],
+        correct: 3, // D
+        explanation: "<i>a</i> = 7, <i>b</i> = 6, U<sub>n</sub> = 151.<br>7 + (n - 1) × 6 = 151 ➔ (n - 1) × 6 = 144 ➔ n - 1 = 24 ➔ <b>n = 25</b>."
+      },
+      {
+        id: 20,
+        category: "Pola Bilangan Bertingkat",
+        question: "Diketahui barisan 3, 7, 13, 21, 31, ... Suku ke-10 (U<sub>10</sub>) barisan tersebut adalah...",
+        options: ["111", "101", "121", "131"],
+        correct: 0, // A
+        explanation: "Beda tingkat 1: +4, +6, +8, +10...<br>Rumus umum suku ke-n: U<sub>n</sub> = n<sup>2</sup> + n + 1.<br>U<sub>10</sub> = 10<sup>2</sup> + 10 + 1 = 100 + 10 + 1 = <b>111</b>."
+      },
+      {
+        id: 21,
+        category: "Aplikasi Tabungan",
+        question: "Bulan Januari Rina menabung Rp50.000. Tiap bulan berikutnya ia menambah tabungan Rp15.000 lebih besar dari bulan sebelumnya. Total tabungan Rina selama 1 tahun adalah...",
+        options: ["Rp1.450.000", "Rp1.590.000", "Rp1.680.000", "Rp1.720.000"],
+        correct: 1, // B
+        explanation: "<i>a</i> = 50.000, <i>b</i> = 15.000, <i>n</i> = 12 bulan.<br>S<sub>12</sub> = 12/2 × [2(50.000) + 11(15.000)] = 6 × [100.000 + 165.000] = 6 × 265.000 = <b>Rp1.590.000</b>."
+      },
+      {
+        id: 22,
+        category: "Deret Geometri Tak Hingga",
+        question: "Sebuah bola dijatuhkan dari ketinggian 12 meter dan memantul kembali dengan tinggi ⅔ dari tinggi sebelumnya. Panjang seluruh lintasan bola hingga berhenti adalah...",
+        options: ["48 meter", "72 meter", "60 meter", "84 meter"],
+        correct: 2, // C
+        explanation: "Rumus Cepat Pantulan Bola: Ketinggian awal (h) × (b + a) / (b - a) untuk rasio a/b.<br>Panjang Lintasan = 12 × (3 + 2) / (3 - 2) = 12 × 5 / 1 = <b>60 meter</b>."
+      },
+      {
+        id: 23,
+        category: "Barisan Geometri",
+        question: "Suku ke-2 suatu barisan geometri adalah 12 dan suku ke-5 adalah 324. Nilai suku ke-4 barisan tersebut adalah...",
+        options: ["96", "144", "216", "108"],
+        correct: 3, // D
+        explanation: "U<sub>5</sub> / U<sub>2</sub> = r<sup>3</sup> ➔ 324 / 12 = 27 ➔ r = 3.<br>U<sub>4</sub> = U<sub>5</sub> / r = 324 / 3 = <b>108</b>."
+      },
+      {
+        id: 24,
+        category: "Kelipatan Bilangan",
+        question: "Jumlah semua bilangan bulat antara 100 dan 300 yang habis dibagi 5 adalah...",
+        options: ["7.800", "7.400", "8.000", "8.200"],
+        correct: 0, // A
+        explanation: "Bilangan pertama <i>a</i> = 105, terakhir U<sub>n</sub> = 295, <i>b</i> = 5.<br>295 = 105 + (n - 1)5 ➔ 5(n - 1) = 190 ➔ n = 39.<br>S<sub>39</sub> = 39/2 × (105 + 295) = 39/2 × 400 = 39 × 200 = <b>7.800</b>."
+      },
+      {
+        id: 25,
+        category: "Pola Pohon Biner",
+        question: "Sebuah cabang pohon membelah menjadi 2 cabang baru pada tingkat 1. Setiap cabang baru membelah lagi menjadi 2 cabang pada tingkat berikutnya. Jumlah total cabang baru dari tingkat 1 hingga tingkat 6 adalah...",
+        svg: `<svg width="180" height="60" viewBox="0 0 180 60" class="mx-auto">
+          <line x1="90" y1="55" x2="90" y2="40" stroke="#854d0e" stroke-width="4"/>
+          <line x1="90" y1="40" x2="60" y2="20" stroke="#854d0e" stroke-width="3"/>
+          <line x1="90" y1="40" x2="120" y2="20" stroke="#854d0e" stroke-width="3"/>
+          <circle cx="60" cy="20" r="4" fill="#16a34a"/>
+          <circle cx="120" cy="20" r="4" fill="#16a34a"/>
+        </svg>`,
+        options: ["62", "126", "254", "128"],
+        correct: 1, // B
+        explanation: "Barisan geometri cabang per tingkat: 2, 4, 8, 16, 32, 64.<br>Total (S<sub>6</sub>) = 2(2<sup>6</sup> - 1) / (2 - 1) = 2(64 - 1) = 2 × 63 = <b>126 cabang</b>."
+      },
+      {
+        id: 26,
+        category: "Aljabar Barisan Aritmatika",
+        question: "Diketahui tiga suku berurutan barisan aritmatika: (2x - 1), (x + 3), (3x - 5). Nilai x yang memenuhi adalah...",
+        options: ["3", "5", "4", "6"],
+        correct: 2, // C
+        explanation: "Sifat suku tengah barisan aritmatika: 2 × U<sub>2</sub> = U<sub>1</sub> + U<sub>3</sub>.<br>2(x + 3) = (2x - 1) + (3x - 5)<br>2x + 6 = 5x - 6 ➔ 3x = 12 ➔ <b>x = 4</b>."
+      },
+      {
+        id: 27,
+        category: "Segitiga Pascal",
+        question: "Jumlah seluruh bilangan pada baris ke-8 pada Segitiga Pascal adalah...",
+        options: ["64", "256", "512", "128"],
+        correct: 3, // D
+        explanation: "Jumlah bilangan pada baris ke-n Segitiga Pascal adalah 2<sup>n-1</sup>.<br>Untuk n = 8: 2<sup>8-1</sup> = 2<sup>7</sup> = <b>128</b>."
+      },
+      {
+        id: 28,
+        category: "Pertumbuhan Biologi",
+        question: "Bakteri jenis A membelah menjadi 2 setiap 15 menit. Jika pada pukul 08.00 terdapat 20 bakteri, banyak bakteri pada pukul 09.30 adalah...",
+        options: ["1.280", "640", "2.560", "5.120"],
+        correct: 0, // A
+        explanation: "Durasi = 08.00 - 09.30 = 90 menit.<br>Banyak pembelahan = 90 / 15 = 6 kali.<br>Jumlah akhir = 20 × 2<sup>6</sup> = 20 × 64 = <b>1.280 bakteri</b>."
+      },
+      {
+        id: 29,
+        category: "Sisipan Aritmatika",
+        question: "Di antara bilangan 4 dan 28 disisipkan 5 bilangan sehingga membentuk barisan aritmatika baru. Beda dari barisan baru tersebut adalah...",
+        options: ["3", "5", "4", "6"],
+        correct: 2, // C
+        explanation: "Beda baru (b') = (y - x) / (k + 1) dengan <i>k</i> = 5 sisipan.<br>b' = (28 - 4) / (5 + 1) = 24 / 6 = <b>4</b>."
+      },
+      {
+        id: 30,
+        category: "Pola Bilangan HOTS",
+        question: "Hasil dari deret bilangan: 1 - 2 + 3 - 4 + 5 - 6 + 7 - 8 + ... + 99 - 100 adalah...",
+        options: ["-100", "0", "50", "-50"],
+        correct: 3, // D
+        explanation: "Kelompokkan tiap dua suku:<br>(1 - 2) + (3 - 4) + (5 - 6) + ... + (99 - 100)<br>= (-1) + (-1) + (-1) + ... (sebanyak 50 pasang)<br>= 50 × (-1) = <b>-50</b>."
+      }
+    ];
+
+    // APP STATE
+    let currentIndex = 0;
+    let userAnswers = {}; // { qId: selectedOptionIndex }
+    const STORAGE_KEY = "tka_smp_pola_barisan_v2"; // Key diperbarui untuk menyesuaikan jawaban teracak baru
+
+    // INITIALIZATION
+    document.addEventListener("DOMContentLoaded", () => {
+      loadState();
+      renderQuestion();
+      renderSidebarGrid();
+      renderModalGrid();
+      updateStats();
+    });
+
+    // LOCAL STORAGE HANDLING
+    function saveState() {
+      try {
+        const state = {
+          userAnswers: userAnswers,
+          currentIndex: currentIndex
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn("Storage not available", e);
+      }
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          userAnswers = parsed.userAnswers || {};
+          currentIndex = parsed.currentIndex || 0;
+        }
+      } catch (e) {
+        userAnswers = {};
+        currentIndex = 0;
+      }
+    }
+
+    function confirmReset() {
+      if (confirm("Apakah kamu yakin ingin menghapus semua jawaban dan mengulang dari awal?")) {
+        userAnswers = {};
+        currentIndex = 0;
+        localStorage.removeItem(STORAGE_KEY);
+        renderQuestion();
+        renderSidebarGrid();
+        renderModalGrid();
+        updateStats();
+      }
+    }
+
+    // RENDER CURRENT QUESTION
+    function renderQuestion() {
+      const q = questionsData[currentIndex];
+      
+      // Update badge & tag
+      document.getElementById("q-number-badge").innerText = `Soal ${currentIndex + 1} dari 30`;
+      document.getElementById("q-category-tag").innerText = q.category;
+      
+      // Question text
+      document.getElementById("q-text").innerHTML = q.question;
+      
+      // SVG Container
+      const svgContainer = document.getElementById("q-svg-container");
+      if (q.svg) {
+        svgContainer.innerHTML = q.svg;
+        svgContainer.classList.remove("hidden");
+      } else {
+        svgContainer.classList.add("hidden");
+        svgContainer.innerHTML = "";
+      }
+
+      // Render Options
+      const optionsContainer = document.getElementById("q-options");
+      optionsContainer.innerHTML = "";
+      
+      const hasAnswered = userAnswers.hasOwnProperty(q.id);
+      const selectedOption = userAnswers[q.id];
+
+      q.options.forEach((optText, idx) => {
+        const optionBtn = document.createElement("button");
+        optionBtn.className = getOptionStyle(q, idx, hasAnswered, selectedOption);
+        optionBtn.onclick = () => handleSelectOption(q.id, idx);
+        optionBtn.disabled = hasAnswered; // Lock choice once selected
+
+        const letter = String.fromCharCode(65 + idx); // A, B, C, D
+        optionBtn.innerHTML = `
+          <div class="flex items-center space-x-3 w-full">
+            <span class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${getLetterBadgeStyle(q, idx, hasAnswered, selectedOption)}">
+              ${letter}
+            </span>
+            <span class="text-xs sm:text-sm font-medium text-left flex-grow">${optText}</span>
+            ${getOptionIcon(q, idx, hasAnswered, selectedOption)}
+          </div>
+        `;
+        optionsContainer.appendChild(optionBtn);
+      });
+
+      // Render Feedback & Pembahasan Box
+      const expBox = document.getElementById("q-explanation");
+      if (hasAnswered) {
+        const isCorrect = selectedOption === q.correct;
+        expBox.classList.remove("hidden", "bg-emerald-50", "border-emerald-200", "bg-rose-50", "border-rose-200");
+        
+        const badge = document.getElementById("exp-icon-badge");
+        const title = document.getElementById("exp-title");
+        const text = document.getElementById("exp-text");
+
+        if (isCorrect) {
+          expBox.classList.add("bg-emerald-50", "border-emerald-200");
+          badge.className = "w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold bg-emerald-500";
+          badge.innerHTML = `<i class="fa-solid fa-check"></i>`;
+          title.className = "font-bold text-sm sm:text-base text-emerald-800";
+          title.innerText = "Jawaban Kamu Benar!";
+        } else {
+          expBox.classList.add("bg-rose-50", "border-rose-200");
+          badge.className = "w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold bg-rose-500";
+          badge.innerHTML = `<i class="fa-solid fa-xmark"></i>`;
+          title.className = "font-bold text-sm sm:text-base text-rose-800";
+          title.innerText = "Jawaban Kamu Belum Tepat";
+        }
+        text.innerHTML = q.explanation;
+      } else {
+        expBox.classList.add("hidden");
+      }
+
+      // Update Nav Buttons State
+      document.getElementById("btn-prev").disabled = currentIndex === 0;
+      
+      const btnNext = document.getElementById("btn-next");
+      if (currentIndex === questionsData.length - 1) {
+        btnNext.innerHTML = `Selesai <i class="fa-solid fa-flag-checkered"></i>`;
+      } else {
+        btnNext.innerHTML = `Berikutnya <i class="fa-solid fa-arrow-right"></i>`;
+      }
+    }
+
+    // STYLING HELPERS FOR OPTIONS
+    function getOptionStyle(q, idx, hasAnswered, selectedOption) {
+      let base = "w-full p-3.5 rounded-xl border text-left transition-all flex items-center justify-between ";
+      if (!hasAnswered) {
+        return base + "border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 text-slate-700 bg-white";
+      }
+      if (idx === q.correct) {
+        return base + "border-emerald-400 bg-emerald-50 text-emerald-900 font-semibold ring-1 ring-emerald-400";
+      }
+      if (idx === selectedOption && idx !== q.correct) {
+        return base + "border-rose-400 bg-rose-50 text-rose-900 font-semibold ring-1 ring-rose-400";
+      }
+      return base + "border-slate-200 opacity-50 bg-slate-50 text-slate-400 cursor-not-allowed";
+    }
+
+    function getLetterBadgeStyle(q, idx, hasAnswered, selectedOption) {
+      if (!hasAnswered) {
+        return "bg-slate-100 text-slate-600";
+      }
+      if (idx === q.correct) {
+        return "bg-emerald-500 text-white";
+      }
+      if (idx === selectedOption && idx !== q.correct) {
+        return "bg-rose-500 text-white";
+      }
+      return "bg-slate-200 text-slate-400";
+    }
+
+    function getOptionIcon(q, idx, hasAnswered, selectedOption) {
+      if (!hasAnswered) return "";
+      if (idx === q.correct) {
+        return `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>`;
+      }
+      if (idx === selectedOption && idx !== q.correct) {
+        return `<i class="fa-solid fa-circle-xmark text-rose-600 text-base"></i>`;
+      }
+      return "";
+    }
+
+    // OPTION SELECTION LOGIC
+    function handleSelectOption(qId, optionIdx) {
+      if (userAnswers.hasOwnProperty(qId)) return; // Prevents re-answering
+      userAnswers[qId] = optionIdx;
+      saveState();
+      renderQuestion();
+      renderSidebarGrid();
+      renderModalGrid();
+      updateStats();
+    }
+
+    // NAVIGATION LOGIC
+    function navNext() {
+      if (currentIndex < questionsData.length - 1) {
+        currentIndex++;
+        saveState();
+        renderQuestion();
+      } else {
+        toggleGridModal();
+      }
+    }
+
+    function navPrev() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        saveState();
+        renderQuestion();
+      }
+    }
+
+    function jumpToQuestion(index) {
+      currentIndex = index;
+      saveState();
+      renderQuestion();
+      const modal = document.getElementById("modal-grid");
+      if (!modal.classList.contains("hidden")) {
+        toggleGridModal();
+      }
+    }
+
+    // SIDEBAR & MODAL GRID RENDERERS
+    function renderSidebarGrid() {
+      const grid = document.getElementById("sidebar-grid");
+      grid.innerHTML = "";
+      questionsData.forEach((q, idx) => {
+        const btn = createGridBadge(q, idx);
+        grid.appendChild(btn);
+      });
+    }
+
+    function renderModalGrid() {
+      const grid = document.getElementById("modal-grid-items");
+      grid.innerHTML = "";
+      questionsData.forEach((q, idx) => {
+        const btn = createGridBadge(q, idx);
+        grid.appendChild(btn);
+      });
+    }
+
+    function createGridBadge(q, idx) {
+      const btn = document.createElement("button");
+      const isCurrent = idx === currentIndex;
+      const hasAnswered = userAnswers.hasOwnProperty(q.id);
+      const isCorrect = hasAnswered && userAnswers[q.id] === q.correct;
+
+      let bgClass = "bg-slate-100 text-slate-600 hover:bg-slate-200 border-slate-200";
+      if (hasAnswered) {
+        bgClass = isCorrect 
+          ? "bg-emerald-500 text-white border-emerald-600" 
+          : "bg-rose-500 text-white border-rose-600";
+      }
+
+      let activeRing = isCurrent ? "ring-2 ring-indigo-600 ring-offset-1 font-extrabold scale-105 z-10" : "font-semibold";
+
+      btn.className = `h-9 rounded-xl border text-xs flex items-center justify-center transition-all ${bgClass} ${activeRing}`;
+      btn.innerText = idx + 1;
+      btn.onclick = () => jumpToQuestion(idx);
+      return btn;
+    }
+
+    // STATS UPDATE LOGIC
+    function updateStats() {
+      const total = questionsData.length;
+      const answeredCount = Object.keys(userAnswers).length;
+      
+      let correctCount = 0;
+      let incorrectCount = 0;
+
+      Object.keys(userAnswers).forEach(qId => {
+        const q = questionsData.find(item => item.id == qId);
+        if (q) {
+          if (userAnswers[qId] === q.correct) {
+            correctCount++;
+          } else {
+            incorrectCount++;
+          }
+        }
+      });
+
+      const percent = Math.round((answeredCount / total) * 100);
+
+      // Desktop Stats
+      document.getElementById("progress-percent").innerText = `${percent}%`;
+      document.getElementById("progress-bar-fill").style.width = `${percent}%`;
+      document.getElementById("stat-answered").innerText = `${answeredCount}/${total}`;
+      document.getElementById("stat-correct").innerText = correctCount;
+      document.getElementById("stat-incorrect").innerText = incorrectCount;
+
+      // Mobile Stats
+      document.getElementById("mobile-progress-text").innerText = `${answeredCount} dari ${total} Selesai`;
+      document.getElementById("mobile-stat-correct").innerHTML = `${correctCount} <i class="fa-solid fa-check"></i>`;
+      document.getElementById("mobile-stat-incorrect").innerHTML = `${incorrectCount} <i class="fa-solid fa-xmark"></i>`;
+    }
+
+    // MODAL TOGGLE
+    function toggleGridModal() {
+      const modal = document.getElementById("modal-grid");
+      modal.classList.toggle("hidden");
+    }
+  </script>
+</body>
+</html>
